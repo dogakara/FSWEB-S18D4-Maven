@@ -29,12 +29,9 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
-
-@WebMvcTest(controllers = {BurgerController.class, GlobalExceptionHandler.class,ApplicationPropertiesAndControllerTest.class})
+@WebMvcTest(controllers = {BurgerController.class, GlobalExceptionHandler.class})
 @ExtendWith(ResultAnalyzer.class)
 class ApplicationPropertiesAndControllerTest {
 
@@ -63,15 +60,11 @@ class ApplicationPropertiesAndControllerTest {
         sampleBurger.setContents("Beef, Lettuce, Tomato, Cheese");
     }
 
-
     @Test
     @DisplayName("application properties istenilenler eklendi mi?")
-    void serverPortIsSetTo8585() {
-
+    void serverPortIsSetTo9000() {
         String serverPort = env.getProperty("server.port");
         assertThat(serverPort).isEqualTo("9000");
-
-
 
         String datasourceUrl = env.getProperty("spring.datasource.url");
         assertNotNull(datasourceUrl);
@@ -90,7 +83,6 @@ class ApplicationPropertiesAndControllerTest {
 
         String hibernateJdbcBind = env.getProperty("logging.level.org.hibernate.jdbc.bind");
         assertNotNull(hibernateJdbcBind);
-
     }
 
     @Test
@@ -155,6 +147,11 @@ class ApplicationPropertiesAndControllerTest {
         Burger updatedBurger = new Burger();
         updatedBurger.setId(1L);
         updatedBurger.setName("Updated Classic Burger");
+        updatedBurger.setPrice(9.99);
+        updatedBurger.setIsVegan(false);
+        updatedBurger.setBreadType(BreadType.BURGER);
+        updatedBurger.setContents("Beef, Lettuce, Tomato, Cheese, Pickle");
+
         given(burgerDao.update(any())).willReturn(updatedBurger);
 
         mockMvc.perform(put("/burger")
@@ -167,13 +164,11 @@ class ApplicationPropertiesAndControllerTest {
     @Test
     @DisplayName("Remove burger test")
     void testRemoveBurger() throws Exception {
-
         given(burgerDao.remove(sampleBurger.getId())).willReturn(sampleBurger);
 
         mockMvc.perform(delete("/burger/{id}", sampleBurger.getId()))
                 .andExpect(status().isOk());
     }
-
 
     @Test
     @DisplayName("Find by bread type test")
@@ -211,5 +206,3 @@ class ApplicationPropertiesAndControllerTest {
                 .andExpect(jsonPath("$[0].contents", containsString("Cheese")));
     }
 }
-
-
